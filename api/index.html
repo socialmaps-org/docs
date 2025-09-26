@@ -10,11 +10,16 @@
 <body>
   <div id="app"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.35.7"></script>
+  <script crossorigin="anonymous" src="scalar-api-reference.js"></script>
 
   <script>
     Scalar.createApiReference('#app', {
       url: 'openapi.yaml',
+      withDefaultFonts: false,
+      defaultOpenAllTags: true,
+      expandAllModelSections: true,
+      expandAllResponses: true,
+      orderSchemaPropertiesBy: 'preserve'
     })
   </script>
 </body>

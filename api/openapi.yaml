@@ -8,66 +8,50 @@ info:
     name: Bora M. Alper
     email: bora@boramalper.org
   version: 0.1.0
+servers:
+  - url: https://api.socialmaps.org/
 paths:
-  /users/{user_id}:
-    get:
-      tags:
-        - Users
-      summary: Retrieve a User
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            $ref: "#/components/schemas/User/properties/id"
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        '400':
-          description: Bad Request. The provided `user_id` has an invalid format.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              examples:
-                InvalidUserID:
-                  summary: 'user ID is invalid'
-                  value:
-                    message: 'Invalid `user_id`. User IDs start with `usr_` prefix.'
-                    code: null
-        '404':
-          description: Not Found. No User with the provided `user_id` is found.
-  /places/find:
+  /v1/places/lookup:
     get:
       tags:
         - Places
-      summary: Find a Place
-      description: Find a Place by its location and name.
+      summary: Look up a Place
+      description: |
+        Look up a Place by its name and geographic coordinates.
+
+        Because OpenStreetMap IDs are not permanent, we require the client to
+        look up Places by their name instead and provide their geographic
+        coordinates as well to narrow down the search (currently to a 10-metre
+        radius).
+
+        The API tolerates small differences between the name provided by the
+        client and the name on record.
       parameters:
         - name: name
           in: query
           required: true
           schema:
             type: string
-            example: "Cork Opera House"
+            example: "The Blackrock Castle"
+            maxLength: 256
         - name: lat
           in: query
           required: true
           schema:
             type: number
             format: double
-            example: 51.9003921
+            minimum: -90
+            maximum: +90
+            example: 51.8216
         - name: lon
           in: query
           required: true
           schema:
             type: number
             format: double
-            example: -8.4728019
+            minimum: -180
+            maximum: +180
+            example: -8.8556
       responses:
         '200':
           description: Successful Response
@@ -75,21 +59,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Place'
-        '400':
-          description: Bad Request. Sent when the provided `user_id` has an invalid format.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              examples:
-                InvalidUserID:
-                  summary: 'user ID is invalid'
-                  value:
-                    message: 'Invalid `user_id`. User IDs start with `usr_` prefix.'
-                    code: null
         '404':
-          description: Not Found. No Place with the provided details is found.
-  /places/{place_id}:
+          description: Not Found
+  /v1/places/{place_id}:
     get:
       tags:
         - Places
@@ -109,9 +81,7 @@ paths:
                 $ref: '#/components/schemas/Place'
         '404':
           description: Not Found
-        '422':
-          description: Validation Error
-  /places/{place_id}/reviews:
+  /v1/places/{place_id}/reviews:
     get:
       tags:
         - Reviews
@@ -122,12 +92,26 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/Place/properties/id'
+          example: plc_nReHKJVfxZbhxmvi36r4rQ
         - name: order
           in: query
           schema:
             type: string
-            enum: ['most_recent', 'most_helpful']
             default: 'most_recent'
+            enum:
+              - 'most_recent'
+              - 'most_helpful'
+            x-enum-descriptions:
+              most_recent: Reviews created last are returned first.
+              most_helpful: Reviews are returned in descending order by their helpfulness score.
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+          description: A limit on the number of Reviews to be returned. 
       responses:
         '200':
           description: Successful Response
@@ -139,6 +123,7 @@ paths:
                   object:
                     type: string
                     const: 'list'
+                    description: Constant string `list`, representing the object's type. Objects of the same type share the same value.
                   data:
                     type: array
                     items:
@@ -148,27 +133,49 @@ paths:
                           properties:
                             user:
                               $ref: '#/components/schemas/User'
+                  next_page_url:
+                    oneOf:
+                      - type: string
+                        format: url
+                      - type: 'null'
+                  prev_page_url:
+                    oneOf:
+                      - type: string
+                        format: url
+                      - type: 'null'
         '404':
           description: Not Found
-        '422':
-          description: Validation Error
     post:
       tags:
         - Reviews
       summary: Post a Review of a Place
       security:
-        - HTTPBearer: []
+        - oAuth2: []
+      x-badges:
+        - name: 'Authentication required'
+          position: before
+          color: '#FFB56A'
       parameters:
         - name: place_id
           in: path
           required: true
           schema:
             $ref: '#/components/schemas/Place/properties/id'
+          example: plc_nReHKJVfxZbhxmvi36r4rQ
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Review'
+              type: object
+              properties:
+                recommends:
+                  description: Whether the user recommends this Place.
+                  type: boolean
+                comment:
+                  description: "The user's comment about the Place, if any."
+                  oneOf:
+                    - type: string
+                    - type: 'null'
       responses:
         '202':
           description: Successful Response
@@ -178,9 +185,7 @@ paths:
                 $ref: '#/components/schemas/Review'
         '404':
           description: Not Found
-        '422':
-          description: Validation Error
-  /reviews/{review_id}:
+  /v1/reviews/{review_id}:
     get:
       tags:
         - Reviews
@@ -191,6 +196,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/Review/properties/id'
+          example: rvw_nReHKJVfxZbhxmvi36r4rQ
       responses:
         '200':
           description: Successful Response
@@ -209,20 +215,40 @@ paths:
                         $ref: '#/components/schemas/Place'
         '404':
           description: Not Found
-        '422':
-          description: Validation Error
     put:
       tags:
         - Reviews
       summary: Update a Review
       security:
-        - HTTPBearer: []
+        - oAuth2: []
+      x-badges:
+        - name: 'Authentication required'
+          position: before
+          color: '#FFB56A'
       parameters:
         - name: review_id
           in: path
           required: true
           schema:
             $ref: '#/components/schemas/Review/properties/id'
+          example: rvw_nReHKJVfxZbhxmvi36r4rQ
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recommends:
+                  description: Whether the user recommends this Place.
+                  type: boolean
+                comment:
+                  description: "The user's comment about the Place, if any."
+                  oneOf:
+                    - type: string
+                    - type: 'null'
+              example:
+                recommends: true
+                comment: Great place! It has a really cute cafe as well and an observatory that you can visit during the week.
       responses:
         '200':
           description: Successful Response
@@ -232,40 +258,55 @@ paths:
                 $ref: '#/components/schemas/Review'
         '404':
           description: Not Found
-        '422':
-          description: Validation Error
     delete:
       tags:
         - Reviews
       summary: Delete a Review
       security:
-        - HTTPBearer: []
+        - oAuth2: []
+      x-badges:
+        - name: 'Authentication required'
+          position: before
+          color: '#FFB56A'
       parameters:
         - name: review_id
           in: path
           required: true
           schema:
             $ref: '#/components/schemas/Review/properties/id'
+          example: rvw_nReHKJVfxZbhxmvi36r4rQ
       responses:
         '204':
           description: Successful Response (No Content)
         '404':
-          description: Not Found Error
-        '422':
-          description: Validation Error
-  /reviews/{review_id}/mark_helpful:
+          description: Not Found
+  /v1/reviews/{review_id}/mark_helpful:
     put:
       tags:
         - Reviews
       summary: Mark a Review as helpful
+      description: |
+        Mark a Review as helpful, which is to indicate to other users that the
+        commentary in this Review is useful and informative.
+
+        We believe that user reviews are inherently subjective and we welcome
+        them as such. However, we also acknowledge that some comments are more
+        useful and informative than others. Therefore, we provide a way for
+        users to mark helpful reviews as such to let helpful reviews reach a
+        broader audience.
       security:
-        - HTTPBearer: []
+        - oAuth2: []
+      x-badges:
+        - name: 'Authentication required'
+          position: before
+          color: '#FFB56A'
       parameters:
         - name: review_id
           in: path
           required: true
           schema:
             $ref: '#/components/schemas/Review/properties/id'
+          example: rvw_nReHKJVfxZbhxmvi36r4rQ
       responses:
         '200':
           description: Successful Response
@@ -275,21 +316,24 @@ paths:
                 $ref: '#/components/schemas/Review'
         '404':
           description: Not Found
-        '422':
-          description: Validation Error
-  /reviews/{review_id}/unmark_helpful:
+  /v1/reviews/{review_id}/unmark_helpful:
     put:
       tags:
         - Reviews
       summary: Remove helpful marking on a Review
       security:
-        - HTTPBearer: []
+        - oAuth2: []
+      x-badges:
+        - name: 'Authentication required'
+          position: before
+          color: '#FFB56A'
       parameters:
         - name: review_id
           in: path
           required: true
           schema:
             $ref: '#/components/schemas/Review/properties/id'
+          example: rvw_nReHKJVfxZbhxmvi36r4rQ
       responses:
         '200':
           description: Successful Response
@@ -299,9 +343,7 @@ paths:
                 $ref: '#/components/schemas/Review'
         '404':
           description: Not Found
-        '422':
-          description: Validation Error
-  /reviews/{review_id}/flag:
+  /v1/reviews/{review_id}/flag:
     put:
       tags:
         - Reviews
@@ -313,13 +355,18 @@ paths:
         Because there isn't a way to undo, clients MUST ask the user for
         confirmation before flagging a Review.
       security:
-        - HTTPBearer: []
+        - oAuth2: []
+      x-badges:
+        - name: 'Authentication required'
+          position: before
+          color: '#FFB56A'
       parameters:
         - name: review_id
           in: path
           required: true
           schema:
             $ref: '#/components/schemas/Review/properties/id'
+          example: rvw_nReHKJVfxZbhxmvi36r4rQ
       responses:
         '200':
           description: Successful Response
@@ -329,8 +376,27 @@ paths:
                 $ref: '#/components/schemas/Review'
         '404':
           description: Not Found
-        '422':
-          description: Validation Error
+  /v1/users/{user_id}:
+    get:
+      tags:
+        - Users
+      summary: Retrieve a User
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/User/properties/id"
+          example: usr_nReHKJVfxZbhxmvi36r4rQ
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        '404':
+          description: Not Found
 components:
   schemas:
     Place:
@@ -339,7 +405,7 @@ components:
         object:
           type: string
           const: 'place'
-          readOnly: true
+          description: Constant string `place`, representing the object's type. Objects of the same type share the same value.
         id:
           description: Unique ID of this Place.
           type: string
@@ -385,11 +451,12 @@ components:
               minimum: 0
               maximum: 1
       example:
+        object: 'place'
         id: 'plc_nReHKJVfxZbhxmvi36r4rQ'
-        name: 'Cork Opera House'
+        name: 'Blackrock Castle'
         location:
-          lat: 51.9002419
-          lon: -8.4730753
+          lat: 51.9001065
+          lon: -8.4024855
           review_stats:
             count: 2317
             like_ratio: 0.9297861
@@ -400,43 +467,41 @@ components:
         object:
           type: string
           const: 'review'
-          readOnly: true
+          description: Constant string `review`, representing the object's type. Objects of the same type share the same value.
         id:
           type: string
           description: Unique ID of this Review.
           pattern: '^rvw_[a-zA-Z0-9]+$'
-          example: 'rvw_nReHKJVfxZbhxmvi36r4rQ'
-          readOnly: true
         created:
           type: string
           description: Timestamp of when this Review was created.
           format: date-time
-          readOnly: true
         place:
           description: The Place that the `user` is reviewing. Expandable.
           type: object
           properties:
             id:
               $ref: '#/components/schemas/Place/properties/id'
-          readOnly: true
         user:
           type: object
           description: The User who authored this Review. Expandable.
           properties:
             id:
               $ref: '#/components/schemas/User/properties/id'
-          readOnly: true
-        liked:
+        recommends:
           type: boolean
-          description: Whether the `user` who authored this Review liked the `place`.
+          description: Whether author of this Review recommends this Place to others.
         comment:
-          description: "`user`'s comments about the `place`, if any."
+          description: "The user's comments about the Place, if any."
           oneOf:
             - type: string
             - type: 'null'
-        marked_helpful:
-          type: boolean
-          description: Whether the user who is making the API call marked this Review as helpful before.
+        marked_helpful_at:
+          description: Timestamp of when the user who is making the API call marked this Review as helpful, if ever.
+          oneOf:
+            - type: string
+              format: date-time
+            - type: 'null'
         helpful_stats:
           type: object
           description: Statistics about the helpfulness of this Review as indicated by other users.
@@ -449,26 +514,38 @@ components:
               type: number
               description: A measure of how helpful this Review is, factoring in its recency (higher is better). We assume that Reviews lose their relevance over time and become less helpful.
               minimum: 0
-          readOnly: true
-      required:
-        - id
+      example:
+        object: 'review'
+        id: 'rvw_nReHKJVfxZbhxmvi36r4rQ'
+        created: '2025-09-21T12:20:56.142Z'
+        place:
+          id: 'plc_nReHKJVfxZbhxmvi36r4rQ'
+        user:
+          $ref: '#/components/schemas/User/example'
+        recommends: true
+        comment: 'Great place! It has a really cute cafe as well and an observatory that you can visit anytime.'
+        marked_helpful_at: null
+        helpful_stats:
+          count: 7
+          score: 6.98832
     User:
       type: object
       properties:
         object:
           type: string
           const: 'user'
-          readOnly: true
+          description: Constant string `user`, representing the object's type. Objects of the same type share the same value.
         id:
-          description: Unique ID of this User.
+          description: Unique ID of the User.
           type: string
           pattern: '^usr_[a-zA-Z0-9]+$'
-          example: 'usr_nReHKJVfxZbhxmvi36r4rQ'
         name:
-          description: Name of this User, which can be their real name or nickname and does not have to be unique.
+          description: Name of the User, which can be their real name or nickname and does not have to be unique.
           type: string
-      required:
-        - id
+      example:
+        object: 'user'
+        id: 'usr_nReHKJVfxZbhxmvi36r4rQ'
+        name: 'bora'
     Error:
       type: object
       properties:
@@ -482,7 +559,7 @@ components:
             - type: 'null'
 
   securitySchemes:
-    oAuthSample:
+    oAuth2:
       type: oauth2
       description: This API uses OAuth 2 with the implicit grant flow. [More info](https://api.example.com/docs/auth)
       flows:
