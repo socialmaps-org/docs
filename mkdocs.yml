@@ -1,0 +1,35 @@
+site_name: Social Maps Documentation
+site_url: https://docs.socialmaps.org/
+repo_url: https://codeberg.org/socialmaps/docs
+use_directory_urls: true
+nav:
+  - 'index.md'
+  - 'ratings.md'
+  - 'API Reference': '/api/'
+theme:
+  name: material
+  features:
+    - content.footnote.tooltips
+plugins:
+  - charts
+  - search
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/vega@5.33.0
+  - https://cdn.jsdelivr.net/npm/vega-lite@5.23.0
+  - https://cdn.jsdelivr.net/npm/vega-embed@6.29.0
+  - https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js
+  - https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js
+  - js/katex.js
+extra_css:
+  - https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css
+markdown_extensions:
+  - footnotes
+  - pymdownx.magiclink
+  - md_in_html
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: vegalite
+          class: vegalite
+          format: !!python/name:mkdocs_charts_plugin.fences.fence_vegalite
