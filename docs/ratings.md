@@ -1,13 +1,9 @@
 # Ratings
 
-Social Maps uses a binary rating system whose options are:
+Social Maps uses a **binary** rating system whose options are:
 
-- "I **recommend** this place" and
-- "I **do not recommend** this place"
-
-We prefer the term "recommend" over "like" (and "dislike") to emphasise the aim of Social Maps, which is, to be a review database for points of interest (POIs) created by people for people.
-
-You can think of "do not recommend" as _recommending against_; if a user is truly indifferent to or indecisive about a place then they should not rate it either.
+1. "I **like** this place" and
+2. "I **dislike** this place"
 
 ## Binary vs multi-choice ratings
 Many existing and well established review systems such as [Google Maps](https://support.google.com/maps/answer/6230175), [TripAdvisor](https://www.tripadvisor.com/business/insights/resources/bubble-rating), and [Yelp](https://www.yelp.com/writeareview) use multi-choice ratings (e.g. 1 to 5 stars), so why does Social Maps use binary ratings?
