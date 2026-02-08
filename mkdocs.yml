@@ -5,6 +5,7 @@ use_directory_urls: true
 nav:
   - 'index.md'
   - 'ratings.md'
+  - 'lookups.md'
   - 'API Reference': '/api/'
 theme:
   name: material
