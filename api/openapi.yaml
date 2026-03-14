@@ -1,581 +1,709 @@
-# yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2025-09-15
-
-openapi: 3.1.0
-info:
-  title: Social Maps API
-  summary: A free & open API for reviewing Points of Interest (POIs), complementing OpenStreetMap.
-  contact:
-    name: Bora M. Alper
-    email: bora@boramalper.org
-  version: 0.1.0
-servers:
-  - url: https://api.socialmaps.org/
-paths:
-  /v1/places/lookup:
-    get:
-      tags:
-        - Places
-      summary: Look up a Place
-      description: |
-        Look up a Place by its name and geographic coordinates.
-
-        Because OpenStreetMap IDs are not permanent, we require the client to
-        look up Places by their name instead and provide their geographic
-        coordinates as well to narrow down the search (currently to a 10-metre
-        radius).
-
-        The API tolerates small differences between the name provided by the
-        client and the name on record.
-      parameters:
-        - name: name
-          in: query
-          required: true
-          schema:
-            type: string
-            example: "The Blackrock Castle"
-            maxLength: 256
-        - name: lat
-          in: query
-          required: true
-          schema:
-            type: number
-            format: double
-            minimum: -90
-            maximum: +90
-            example: 51.8216
-        - name: lon
-          in: query
-          required: true
-          schema:
-            type: number
-            format: double
-            minimum: -180
-            maximum: +180
-            example: -8.8556
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Place'
-        '404':
-          description: Not Found
-  /v1/places/{place_id}:
-    get:
-      tags:
-        - Places
-      summary: Retrieve a Place
-      parameters:
-        - name: place_id
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/Place/properties/id'
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Place'
-        '404':
-          description: Not Found
-  /v1/places/{place_id}/reviews:
-    get:
-      tags:
-        - Reviews
-      summary: List Reviews of a Place
-      parameters:
-        - name: place_id
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/Place/properties/id'
-          example: plc_nReHKJVfxZbhxmvi36r4rQ
-        - name: order
-          in: query
-          schema:
-            type: string
-            default: 'most_recent'
-            enum:
-              - 'most_recent'
-              - 'most_helpful'
-            x-enum-descriptions:
-              most_recent: Reviews created last are returned first.
-              most_helpful: Reviews are returned in descending order by their helpfulness score.
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 10
-            minimum: 1
-            maximum: 100
-          description: A limit on the number of Reviews to be returned. 
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  object:
-                    type: string
-                    const: 'list'
-                    description: Constant string `list`, representing the object's type. Objects of the same type share the same value.
-                  data:
-                    type: array
-                    items:
-                      allOf:
-                        - $ref: '#/components/schemas/Review'
-                        - type: object
-                          properties:
-                            user:
-                              $ref: '#/components/schemas/User'
-                  next_page_url:
-                    oneOf:
-                      - type: string
-                        format: url
-                      - type: 'null'
-                  prev_page_url:
-                    oneOf:
-                      - type: string
-                        format: url
-                      - type: 'null'
-        '404':
-          description: Not Found
-    post:
-      tags:
-        - Reviews
-      summary: Post a Review of a Place
-      security:
-        - oAuth2: []
-      x-badges:
-        - name: 'Authentication required'
-          position: before
-          color: '#FFB56A'
-      parameters:
-        - name: place_id
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/Place/properties/id'
-          example: plc_nReHKJVfxZbhxmvi36r4rQ
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                recommends:
-                  description: Whether the user recommends this Place.
-                  type: boolean
-                comment:
-                  description: "The user's comment about the Place, if any."
-                  oneOf:
-                    - type: string
-                    - type: 'null'
-      responses:
-        '202':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Review'
-        '404':
-          description: Not Found
-  /v1/reviews/{review_id}:
-    get:
-      tags:
-        - Reviews
-      summary: Retrieve a Review
-      parameters:
-        - name: review_id
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/Review/properties/id'
-          example: rvw_nReHKJVfxZbhxmvi36r4rQ
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Review'
-                  - type: object
-                    properties:
-                      user:
-                        $ref: '#/components/schemas/User'
-                  - type: object
-                    properties:
-                      place:
-                        $ref: '#/components/schemas/Place'
-        '404':
-          description: Not Found
-    put:
-      tags:
-        - Reviews
-      summary: Update a Review
-      security:
-        - oAuth2: []
-      x-badges:
-        - name: 'Authentication required'
-          position: before
-          color: '#FFB56A'
-      parameters:
-        - name: review_id
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/Review/properties/id'
-          example: rvw_nReHKJVfxZbhxmvi36r4rQ
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                recommends:
-                  description: Whether the user recommends this Place.
-                  type: boolean
-                comment:
-                  description: "The user's comment about the Place, if any."
-                  oneOf:
-                    - type: string
-                    - type: 'null'
-              example:
-                recommends: true
-                comment: Great place! It has a really cute cafe as well and an observatory that you can visit during the week.
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Review'
-        '404':
-          description: Not Found
-    delete:
-      tags:
-        - Reviews
-      summary: Delete a Review
-      security:
-        - oAuth2: []
-      x-badges:
-        - name: 'Authentication required'
-          position: before
-          color: '#FFB56A'
-      parameters:
-        - name: review_id
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/Review/properties/id'
-          example: rvw_nReHKJVfxZbhxmvi36r4rQ
-      responses:
-        '204':
-          description: Successful Response (No Content)
-        '404':
-          description: Not Found
-  /v1/reviews/{review_id}/mark_helpful:
-    put:
-      tags:
-        - Reviews
-      summary: Mark a Review as helpful
-      description: |
-        Mark a Review as helpful, which is to indicate to other users that the
-        commentary in this Review is useful and informative.
-
-        We believe that user reviews are inherently subjective and we welcome
-        them as such. However, we also acknowledge that some comments are more
-        useful and informative than others. Therefore, we provide a way for
-        users to mark helpful reviews as such to let helpful reviews reach a
-        broader audience.
-      security:
-        - oAuth2: []
-      x-badges:
-        - name: 'Authentication required'
-          position: before
-          color: '#FFB56A'
-      parameters:
-        - name: review_id
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/Review/properties/id'
-          example: rvw_nReHKJVfxZbhxmvi36r4rQ
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Review'
-        '404':
-          description: Not Found
-  /v1/reviews/{review_id}/unmark_helpful:
-    put:
-      tags:
-        - Reviews
-      summary: Remove helpful marking on a Review
-      security:
-        - oAuth2: []
-      x-badges:
-        - name: 'Authentication required'
-          position: before
-          color: '#FFB56A'
-      parameters:
-        - name: review_id
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/Review/properties/id'
-          example: rvw_nReHKJVfxZbhxmvi36r4rQ
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Review'
-        '404':
-          description: Not Found
-  /v1/reviews/{review_id}/flag:
-    put:
-      tags:
-        - Reviews
-      summary: Flag a Review
-      description: |
-        Flag a Review for moderator consideration, to report a potential breach
-        of rules.
-
-        Because there isn't a way to undo, clients MUST ask the user for
-        confirmation before flagging a Review.
-      security:
-        - oAuth2: []
-      x-badges:
-        - name: 'Authentication required'
-          position: before
-          color: '#FFB56A'
-      parameters:
-        - name: review_id
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/Review/properties/id'
-          example: rvw_nReHKJVfxZbhxmvi36r4rQ
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Review'
-        '404':
-          description: Not Found
-  /v1/users/{user_id}:
-    get:
-      tags:
-        - Users
-      summary: Retrieve a User
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            $ref: "#/components/schemas/User/properties/id"
-          example: usr_nReHKJVfxZbhxmvi36r4rQ
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        '404':
-          description: Not Found
 components:
   schemas:
-    Place:
-      type: object
+    ErrorDetail:
+      additionalProperties: false
       properties:
-        object:
-          type: string
-          const: 'place'
-          description: Constant string `place`, representing the object's type. Objects of the same type share the same value.
-        id:
-          description: Unique ID of this Place.
-          type: string
-          pattern: '^plc_[a-zA-Z0-9]+$'
-        name:
-          description: Name of this Place.
-          type: string
         location:
-          description: |
-            Geographic coordinates of this Place using the standard WGS84 projection.
-
-            While storing and processing coordinates, do not use IEEE 32-bit floating point data type since it is limited to about 5 decimal places for the highest longitude whereas we use 7 decimal places.
-          type: object
+          description: Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
+          type: string
+        message:
+          description: Error message text
+          type: string
+        value:
+          description: The value at the given location
+      type: object
+    ErrorModel:
+      additionalProperties: false
+      properties:
+        detail:
+          description: A human-readable explanation specific to this occurrence of the problem.
+          examples:
+            - Property foo is required but is missing.
+          type: string
+        errors:
+          description: Optional list of individual error details
+          items:
+            $ref: "#/components/schemas/ErrorDetail"
+          type:
+            - array
+            - "null"
+        instance:
+          description: A URI reference that identifies the specific occurrence of the problem.
+          examples:
+            - https://example.com/error-log/abc123
+          format: uri
+          type: string
+        status:
+          description: HTTP status code
+          examples:
+            - 400
+          format: int64
+          type: integer
+        title:
+          description: A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
+          examples:
+            - Bad Request
+          type: string
+        type:
+          default: about:blank
+          description: A URI reference to human-readable documentation for the error.
+          examples:
+            - https://example.com/errors/example
+          format: uri
+          type: string
+      type: object
+    Place:
+      additionalProperties: false
+      properties:
+        id:
+          description: Unique identifier for this **Place**.
+          format: int64
+          minimum: 1
+          type: integer
+        location:
+          additionalProperties: false
+          description: The geolocation of this **Place** (or its centre if it's a way/relation) based on [WGS 84](https://en.wikipedia.org/wiki/WGS-84).
           properties:
             lat:
-              description: Latitude coordinate in degrees (North of equator is positive).
-              type: number
+              description: Latitude in decimal degrees.
               format: double
-              minimum: -90
-              maximum: 90
-            lon:
-              description: Longitude coordinate in degrees (East of Greenwich is positive).
-              type: number
-              format: double
-              minimum: -180
               maximum: 180
-        review_stats:
-          description: Statistics about the reviews users wrote about this Place.
-          type: object
-          properties:
-            count:
-              description: Number of reviews written.
-              type: integer
-              minimum: 0
-            like_ratio:
-              description: Ratio of reviews which liked this Place to all reviews.
+              minimum: -180
               type: number
-              minimum: 0
-              maximum: 1
-            rank:
-              description: A measure of how much liked this Place is (higher is better), factoring in the recency of its reviews and the total number of reviews. We assume that reviews lose their relevance over time and more reviews give us greater confidence the likeability of a Place.
+            lon:
+              description: Latitude in decimal degrees.
+              format: double
+              maximum: 90
+              minimum: -90
               type: number
-              minimum: 0
-              maximum: 1
-      example:
-        object: 'place'
-        id: 'plc_nReHKJVfxZbhxmvi36r4rQ'
-        name: 'Blackrock Castle'
-        location:
-          lat: 51.9001065
-          lon: -8.4024855
-          review_stats:
-            count: 2317
-            like_ratio: 0.9297861
-            rank: 0.9176327
-    Review:
-      type: object
-      properties:
-        object:
-          type: string
-          const: 'review'
-          description: Constant string `review`, representing the object's type. Objects of the same type share the same value.
-        id:
-          type: string
-          description: Unique ID of this Review.
-          pattern: '^rvw_[a-zA-Z0-9]+$'
-        created:
-          type: string
-          description: Timestamp of when this Review was created.
-          format: date-time
-        place:
-          description: The Place that the `user` is reviewing. Expandable.
+          required:
+            - lat
+            - lon
           type: object
-          properties:
-            id:
-              $ref: '#/components/schemas/Place/properties/id'
-        user:
-          type: object
-          description: The User who authored this Review. Expandable.
-          properties:
-            id:
-              $ref: '#/components/schemas/User/properties/id'
-        recommends:
-          type: boolean
-          description: Whether author of this Review recommends this Place to others.
-        comment:
-          description: "The user's comments about the Place, if any."
-          oneOf:
-            - type: string
-            - type: 'null'
-        marked_helpful_at:
-          description: Timestamp of when the user who is making the API call marked this Review as helpful, if ever.
-          oneOf:
-            - type: string
-              format: date-time
-            - type: 'null'
-        helpful_stats:
-          type: object
-          description: Statistics about the helpfulness of this Review as indicated by other users.
-          properties:
-            count:
-              type: integer
-              description: Number of users who found this Review helpful.
-              minimum: 0
-            score:
-              type: number
-              description: A measure of how helpful this Review is, factoring in its recency (higher is better). We assume that Reviews lose their relevance over time and become less helpful.
-              minimum: 0
-      example:
-        object: 'review'
-        id: 'rvw_nReHKJVfxZbhxmvi36r4rQ'
-        created: '2025-09-21T12:20:56.142Z'
-        place:
-          id: 'plc_nReHKJVfxZbhxmvi36r4rQ'
-        user:
-          $ref: '#/components/schemas/User/example'
-        recommends: true
-        comment: 'Great place! It has a really cute cafe as well and an observatory that you can visit anytime.'
-        marked_helpful_at: null
-        helpful_stats:
-          count: 7
-          score: 6.98832
-    User:
-      type: object
-      properties:
-        object:
-          type: string
-          const: 'user'
-          description: Constant string `user`, representing the object's type. Objects of the same type share the same value.
-        id:
-          description: Unique ID of the User.
-          type: string
-          pattern: '^usr_[a-zA-Z0-9]+$'
         name:
-          description: Name of the User, which can be their real name or nickname and does not have to be unique.
+          description: The common, default name in the local language of this **Place**.
+          maxLength: 256
           type: string
-      example:
-        object: 'user'
-        id: 'usr_nReHKJVfxZbhxmvi36r4rQ'
-        name: 'bora'
-    Error:
+        object:
+          enum:
+            - place
+          type: string
+        osm_id:
+          description: OpenStreetMap [ID](https://wiki.openstreetmap.org/wiki/Elements#id) of this **Place**.
+          format: int64
+          type: integer
+        osm_tags:
+          additionalProperties:
+            type: string
+          description: OpenStreetMap [tags](https://wiki.openstreetmap.org/wiki/Tags) of this **Place**.
+          type: object
+        osm_type:
+          description: OpenStreetMap [type](https://wiki.openstreetmap.org/wiki/Elements) of this **Place**.
+          type: string
+        rating_stats:
+          additionalProperties: false
+          description: Statistics about the **Reviews** of this **Place**.
+          properties:
+            count:
+              description: Number of **Review**s created for this **Place**.
+              format: int64
+              minimum: 0
+              type: integer
+            like_ratio:
+              description: Ratio of **Review**s that liked this **Place** to all its **Review**s.
+              format: double
+              maximum: 1
+              minimum: 0
+              type:
+                - number
+                - "null"
+            score:
+              description: The likeability score of this **Place** based on the ratio of **Review**s that liked it, the total number of and the recency of its **Review**s.
+              exclusiveMaximum: 1
+              exclusiveMinimum: 0
+              format: double
+              type: number
+          required:
+            - count
+            - like_ratio
+            - score
+          type: object
+      required:
+        - id
+        - osm_type
+        - osm_id
+        - osm_tags
       type: object
+    Review:
+      additionalProperties: false
       properties:
-        message:
-          description: A human-readable message in English providing more details about the error. You should not show these messages to your users.
+        comment:
+          description: The comment written by the **User** about this **Place**, if written. Otherwise can be an empty string.
           type: string
-        code:
-          description: For exceptions that are not programmer errors and that you can handle programmatically, an enum indicating what the issue is.
-          oneOf:
-            - type: string
-            - type: 'null'
-
+        created:
+          description: The [UNIX timestamp](https://en.wikipedia.org/wiki/Unix_time) of when this **Review** was created.
+          format: int64
+          minimum: 0
+          type: integer
+        id:
+          description: Unique identifier for this **Review**.
+          format: int64
+          minimum: 1
+          type: integer
+        liked:
+          description: Whether the **User** liked this **Place** or not.
+          type: boolean
+        n_likes:
+          description: The number of users who liked this **Review**.
+          format: int64
+          minimum: 0
+          type: integer
+        object:
+          enum:
+            - review
+          type: string
+        place:
+          additionalProperties: false
+          description: The **Place** which this **Review** is about. This is a stub object, meaning it contains only an ID.
+          properties:
+            id:
+              format: int64
+              minimum: 1
+              type: integer
+          required:
+            - id
+          type: object
+        user:
+          additionalProperties: false
+          description: The **User** who created this **Review**. This is a stub object, meaning it contains only an ID.
+          properties:
+            id:
+              examples:
+                - 2077851
+              format: int64
+              minimum: 1
+              type: integer
+          required:
+            - id
+          type: object
+      required:
+        - object
+        - id
+        - created
+        - place
+        - user
+        - liked
+        - comment
+        - n_likes
+      type: object
+    User:
+      additionalProperties: false
+      properties:
+        display_name:
+          examples:
+            - boramalper
+          type: string
+        id:
+          examples:
+            - 2077851
+          format: int64
+          minimum: 1
+          type: integer
+      required:
+        - id
+        - display_name
+      type: object
   securitySchemes:
-    oAuth2:
-      type: oauth2
-      description: This API uses OAuth 2 with the implicit grant flow. [More info](https://api.example.com/docs/auth)
+    oauth2:
       flows:
         authorizationCode:
-          x-usePkce: true
-          authorizationUrl: https://api.example.com/oauth2/authorize
-          scopes:
-            write_reviews: Create, update, and delete your reviews on your behalf.
-  responses:
-    BadRequest:
-      description: Bad Request. Typically due to malformed request syntax or invalid request body.
-    
-tags:
-  - name: Places
-    description: A **Place** is a Point of Interest (POI) in the world, such as a museum, a cafe, or a park.
-  - name: Reviews
-    description: A **Review** is a subjective assessment of a Place for the information of other users.
-  - name: Users
-    description: A **User** is a person who visits Places and reads & writes Reviews of them.
+          authorizationUrl: https://auth.socialmaps.org/realms/socialmaps/protocol/openid-connect/auth
+          scopes: null
+          tokenUrl: https://auth.socialmaps.org/realms/socialmaps/protocol/openid-connect/token
+      type: oauth2
+info:
+  title: Social Maps API
+  version: 0.20251213.0
+openapi: 3.1.0
+paths:
+  /v1/places:
+    get:
+      description: |
+        Query Places in a bounding-box filtered by their OpenStreetMap [tags](https://wiki.openstreetmap.org/wiki/Tags).
+      operationId: query_places
+      parameters:
+        - description: Maximum latitude (i.e. north-side) of the bounding-box in which **Places** are.
+          explode: false
+          in: query
+          name: max_lat
+          required: true
+          schema:
+            description: Maximum latitude (i.e. north-side) of the bounding-box in which **Places** are.
+            format: double
+            maximum: 180
+            minimum: -180
+            type: number
+        - description: Maximum longitude (i.e. east-side) of the bounding-box in which **Places** are.
+          explode: false
+          in: query
+          name: max_lon
+          required: true
+          schema:
+            description: Maximum longitude (i.e. east-side) of the bounding-box in which **Places** are.
+            format: double
+            maximum: 90
+            minimum: -90
+            type: number
+        - description: Minimum latitude (i.e. south-side) of the bounding-box in which **Places** are.
+          explode: false
+          in: query
+          name: min_lat
+          required: true
+          schema:
+            description: Minimum latitude (i.e. south-side) of the bounding-box in which **Places** are.
+            format: double
+            maximum: 180
+            minimum: -180
+            type: number
+        - description: Minimum longitude (i.e. west-side) of the bounding-box in which **Places** are.
+          explode: false
+          in: query
+          name: min_lon
+          required: true
+          schema:
+            description: Minimum longitude (i.e. west-side) of the bounding-box in which **Places** are.
+            format: double
+            maximum: 90
+            minimum: -90
+            type: number
+        - description: JSON Path filter expression using PostgreSQL dialect to filter **Places** in the bounding-box by their OpenStreetMap [tags](https://wiki.openstreetmap.org/wiki/Tags).
+          example: $.amenity == "restaurant" && $.cuisine like_regex "turkish" && $.outdoor_seating == "yes"
+          explode: false
+          in: query
+          name: predicate
+          required: true
+          schema:
+            description: JSON Path filter expression using PostgreSQL dialect to filter **Places** in the bounding-box by their OpenStreetMap [tags](https://wiki.openstreetmap.org/wiki/Tags).
+            examples:
+              - $.amenity == "restaurant" && $.cuisine like_regex "turkish" && $.outdoor_seating == "yes"
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties: false
+                properties:
+                  data:
+                    items:
+                      $ref: "#/components/schemas/Place"
+                    type: array
+                  object:
+                    enum:
+                      - list
+                    type: string
+                required:
+                  - object
+                  - data
+                type: object
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      summary: Query Places
+      tags:
+        - Places
+  /v1/places/lookup:
+    get:
+      description: |
+        Look up a Place by its name and geo-coordinates.
+
+        We require clients to look up Places by their "name + location" because OpenStreetMap IDs are [not permanent](https://wiki.openstreetmap.org/wiki/Permanent_ID). You can read more about it in the [docs](https://docs.socialmaps.org/https://docs.socialmaps.org/lookups/).
+      operationId: lookup_place
+      parameters:
+        - description: The name of the **Place** in any language verbatim as recorded in OpenStreetMap.
+          explode: false
+          in: query
+          name: name
+          required: true
+          schema:
+            description: The name of the **Place** in any language verbatim as recorded in OpenStreetMap.
+            maxLength: 256
+            type: string
+        - description: |-
+            Latitude of the **Place** (or its centre if it's a way/relation) in decimal degrees based on [WGS 84](https://en.wikipedia.org/wiki/WGS-84).
+
+            The location doesn't have to be exactly accurate, but must be precise enough (7 decimal places) to narrow down the search.
+          explode: false
+          in: query
+          name: lat
+          required: true
+          schema:
+            description: |-
+              Latitude of the **Place** (or its centre if it's a way/relation) in decimal degrees based on [WGS 84](https://en.wikipedia.org/wiki/WGS-84).
+
+              The location doesn't have to be exactly accurate, but must be precise enough (7 decimal places) to narrow down the search.
+            format: double
+            maximum: 180
+            minimum: -180
+            type: number
+        - description: |-
+            Approximate longitude of the **Place** (or its centre if it's a way/relation) in decimal degrees based on [WGS 84](https://en.wikipedia.org/wiki/WGS-84).
+
+            The location doesn't have to be exactly accurate, but must be precise enough (7 decimal places) to narrow down the search.
+          explode: false
+          in: query
+          name: lon
+          required: true
+          schema:
+            description: |-
+              Approximate longitude of the **Place** (or its centre if it's a way/relation) in decimal degrees based on [WGS 84](https://en.wikipedia.org/wiki/WGS-84).
+
+              The location doesn't have to be exactly accurate, but must be precise enough (7 decimal places) to narrow down the search.
+            format: double
+            maximum: 90
+            minimum: -90
+            type: number
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      summary: Lookup a Place
+      tags:
+        - Places
+  /v1/places/{place_id}:
+    get:
+      description: |
+        Retrieve a Place by ID.
+      operationId: retrieve_place
+      parameters:
+        - description: Unique identifier for the **Place** you are retrieving.
+          in: path
+          name: place_id
+          required: true
+          schema:
+            description: Unique identifier for the **Place** you are retrieving.
+            format: int64
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      summary: Retrieve a Place
+      tags:
+        - Places
+  /v1/places/{place_id}/reviews:
+    get:
+      description: |
+        List Reviews of a Place by Place ID.
+      operationId: list_reviews_of_place
+      parameters:
+        - description: Unique identifier for the **Place** the user is listing **Review** for.
+          in: path
+          name: place_id
+          required: true
+          schema:
+            description: Unique identifier for the **Place** the user is listing **Review** for.
+            format: int64
+            minimum: 1
+            type: integer
+        - description: Maximum number of **Review**s to return at a time.
+          explode: false
+          in: query
+          name: limit
+          schema:
+            default: 20
+            description: Maximum number of **Review**s to return at a time.
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties: false
+                properties:
+                  data:
+                    items:
+                      additionalProperties: false
+                      properties:
+                        comment:
+                          description: The comment written by the **User** about this **Place**, if written. Otherwise can be an empty string.
+                          type: string
+                        created:
+                          description: The [UNIX timestamp](https://en.wikipedia.org/wiki/Unix_time) of when this **Review** was created.
+                          format: int64
+                          minimum: 0
+                          type: integer
+                        id:
+                          description: Unique identifier for this **Review**.
+                          format: int64
+                          minimum: 1
+                          type: integer
+                        liked:
+                          description: Whether the **User** liked this **Place** or not.
+                          type: boolean
+                        n_likes:
+                          description: The number of users who liked this **Review**.
+                          format: int64
+                          minimum: 0
+                          type: integer
+                        object:
+                          enum:
+                            - review
+                          type: string
+                        place:
+                          additionalProperties: false
+                          description: The **Place** which this **Review** is about. This is a stub object, meaning it contains only an ID.
+                          properties:
+                            id:
+                              format: int64
+                              minimum: 1
+                              type: integer
+                          required:
+                            - id
+                          type: object
+                        user:
+                          $ref: "#/components/schemas/User"
+                          description: The **User** who created this **Review**. This is an expanded object, meaning it contains all fields.
+                      required:
+                        - user
+                        - object
+                        - id
+                        - created
+                        - place
+                        - liked
+                        - comment
+                        - n_likes
+                      type: object
+                    type: array
+                  object:
+                    enum:
+                      - list
+                    type: string
+                required:
+                  - object
+                  - data
+                type: object
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      summary: List Reviews of a Place
+      tags:
+        - Reviews
+    post:
+      description: |
+        Create a Review of a Place.
+      operationId: create_review
+      parameters:
+        - description: Unique identifier for the **Place** the user is creating a **Review** for.
+          in: path
+          name: place_id
+          required: true
+          schema:
+            description: Unique identifier for the **Place** the user is creating a **Review** for.
+            format: int64
+            minimum: 0
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                comment:
+                  description: The comment written by the user about this **Place**, if written. Otherwise can be an empty string.
+                  type: string
+                liked:
+                  description: Whether the user liked this **Place** or not.
+                  type: boolean
+              required:
+                - liked
+                - comment
+              type: object
+        required: true
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+          description: Accepted
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - oauth2:
+            - reviews:write
+      summary: Create a Review
+      tags:
+        - Reviews
+  /v1/reviews/{review_id}:
+    delete:
+      description: |
+        Delete a Review.
+      operationId: delete_review
+      parameters:
+        - in: path
+          name: review_id
+          required: true
+          schema:
+            format: int64
+            minimum: 1
+            type: integer
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - oauth2:
+            - reviews:write
+      summary: Delete a Review
+      tags:
+        - Reviews
+    put:
+      description: |
+        Update a Review.
+
+        You cannot update a Review more than an hour after creating it. You can, however, delete a Review any time and create a new one.
+      operationId: update_review
+      parameters:
+        - description: Unique identifier for the **Review** the user is updating.
+          in: path
+          name: review_id
+          required: true
+          schema:
+            description: Unique identifier for the **Review** the user is updating.
+            format: int64
+            minimum: 1
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                comment:
+                  description: The comment written by the user about this **Place**, if written. Otherwise can be an empty string.
+                  type: string
+                liked:
+                  description: Whether the user liked this **Place** or not.
+                  type: boolean
+              required:
+                - liked
+                - comment
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - oauth2:
+            - reviews:write
+      summary: Update a Review
+      tags:
+        - Reviews
+  /v1/reviews/{review_id}/like:
+    put:
+      description: |
+        Like a **Review**.
+
+        A **User** cannot like their own **Review**.
+      operationId: like_review
+      parameters:
+        - in: path
+          name: review_id
+          required: true
+          schema:
+            format: int64
+            minimum: 1
+            type: integer
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - oauth2:
+            - reviews:write
+      summary: Like a Review
+      tags:
+        - Reviews
+  /v1/reviews/{review_id}/unlike:
+    put:
+      description: |
+        Unlike a Review.
+      operationId: unlike_review
+      parameters:
+        - in: path
+          name: review_id
+          required: true
+          schema:
+            format: int64
+            minimum: 1
+            type: integer
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - oauth2:
+            - reviews:write
+      summary: Unlike a Review
+      tags:
+        - Reviews
