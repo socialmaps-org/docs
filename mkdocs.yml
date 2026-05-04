@@ -7,6 +7,7 @@ nav:
   - 'ratings.md'
   - 'lookups.md'
   - 'API Reference': '/api/'
+  - 'SDK for Android': '/sdk/android/'
 theme:
   name: material
   features:

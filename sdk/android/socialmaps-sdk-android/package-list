@@ -1,0 +1,33 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:org.socialmaps.sdk.android////PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/index.html
+$dokka.location:org.socialmaps.sdk.android/Location///PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-location/index.html
+$dokka.location:org.socialmaps.sdk.android/Location/Location/#java.lang.Double#java.lang.Double/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-location/-location.html
+$dokka.location:org.socialmaps.sdk.android/Location/fromJSON/#org.json.JSONObject/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-location/from-j-s-o-n.html
+$dokka.location:org.socialmaps.sdk.android/OsmType.NODE///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}socialmaps-sdk-android/org.socialmaps.sdk.android/-osm-type/-n-o-d-e/index.html
+$dokka.location:org.socialmaps.sdk.android/OsmType.RELATION///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}socialmaps-sdk-android/org.socialmaps.sdk.android/-osm-type/-r-e-l-a-t-i-o-n/index.html
+$dokka.location:org.socialmaps.sdk.android/OsmType.WAY///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}socialmaps-sdk-android/org.socialmaps.sdk.android/-osm-type/-w-a-y/index.html
+$dokka.location:org.socialmaps.sdk.android/OsmType///PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-osm-type/index.html
+$dokka.location:org.socialmaps.sdk.android/OsmType/fromString/#java.lang.String/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-osm-type/from-string.html
+$dokka.location:org.socialmaps.sdk.android/OsmType/valueOf/#java.lang.String/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-osm-type/value-of.html
+$dokka.location:org.socialmaps.sdk.android/OsmType/values/#/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-osm-type/values.html
+$dokka.location:org.socialmaps.sdk.android/Place///PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-place/index.html
+$dokka.location:org.socialmaps.sdk.android/PlaceRatingStats///PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-place-rating-stats/index.html
+$dokka.location:org.socialmaps.sdk.android/PlaceRef///PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-place-ref/index.html
+$dokka.location:org.socialmaps.sdk.android/PlaceRef/get/#/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-place-ref/get.html
+$dokka.location:org.socialmaps.sdk.android/Review///PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-review/index.html
+$dokka.location:org.socialmaps.sdk.android/SocialMaps///PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps/index.html
+$dokka.location:org.socialmaps.sdk.android/SocialMaps/createReview/#java.lang.String#java.lang.Long#java.lang.String#java.lang.Boolean/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps/create-review.html
+$dokka.location:org.socialmaps.sdk.android/SocialMaps/deleteReview/#java.lang.String#java.lang.Long/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps/delete-review.html
+$dokka.location:org.socialmaps.sdk.android/SocialMaps/likeReview/#java.lang.String#java.lang.Long/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps/like-review.html
+$dokka.location:org.socialmaps.sdk.android/SocialMaps/listReviewsOfPlace/#java.lang.Long/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps/list-reviews-of-place.html
+$dokka.location:org.socialmaps.sdk.android/SocialMaps/lookupPlace/#java.lang.String#java.lang.Double#java.lang.Double/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps/lookup-place.html
+$dokka.location:org.socialmaps.sdk.android/SocialMaps/queryPlaces/#java.lang.Double#java.lang.Double#java.lang.Double#java.lang.Double#java.lang.String/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps/query-places.html
+$dokka.location:org.socialmaps.sdk.android/SocialMaps/retrievePlace/#java.lang.Long/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps/retrieve-place.html
+$dokka.location:org.socialmaps.sdk.android/SocialMaps/unlikeReview/#java.lang.String#java.lang.Long/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps/unlike-review.html
+$dokka.location:org.socialmaps.sdk.android/SocialMaps/updateReview/#java.lang.String#java.lang.Long#java.lang.String#java.lang.Boolean/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps/update-review.html
+$dokka.location:org.socialmaps.sdk.android/SocialMapsObject///PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-social-maps-object/index.html
+$dokka.location:org.socialmaps.sdk.android/User///PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-user/index.html
+$dokka.location:org.socialmaps.sdk.android/UserRef///PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-user-ref/index.html
+$dokka.location:org.socialmaps.sdk.android/UserRef/get/#/PointingToDeclaration/socialmaps-sdk-android/org.socialmaps.sdk.android/-user-ref/get.html
+org.socialmaps.sdk.android
