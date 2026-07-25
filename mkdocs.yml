@@ -1,6 +1,6 @@
 site_name: Social Maps Documentation
 site_url: https://docs.socialmaps.org/
-repo_url: https://codeberg.org/socialmaps/docs
+repo_url: https://gitlab.com/socialmaps/docs
 use_directory_urls: true
 nav:
   - "index.md"

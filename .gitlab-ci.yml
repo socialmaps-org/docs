@@ -1,15 +1,25 @@
-# The Docker image that will be used to build your app
-image: ghcr.io/astral-sh/uv:python3.14-trixie
-create-pages:
-  pages:
-    # The folder that contains the files to be exposed at the Page URL
-    publish: site
-  rules:
-    # This ensures that only pushes to the default branch will trigger
-    # a pages deploy
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-  # Functions that should be executed before the build script is run
+stages:
+  - test
+  - publish
+
+build:
+  stage: test
+  image: ghcr.io/astral-sh/uv:python3.14-trixie
   before_script:
     - uv sync --locked
   script:
     - make build
+  rules:
+    - if: $CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH
+
+publish:
+  stage: publish
+  image: ghcr.io/astral-sh/uv:python3.14-trixie
+  pages:
+    publish: site
+  before_script:
+    - uv sync --locked
+  script:
+    - make build
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
