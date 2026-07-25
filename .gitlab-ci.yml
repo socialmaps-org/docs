@@ -1,6 +1,15 @@
 stages:
+  - verify
   - test
   - publish
+
+check-format:
+  stage: verify
+  image: docker.io/node:24.18-trixie
+  before_script:
+    - npm install --global prettier@3.9.6
+  script:
+    - npx prettier --check .
 
 build:
   stage: test
