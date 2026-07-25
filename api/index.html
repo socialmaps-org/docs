@@ -1,28 +1,29 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <title>Social Maps API Reference</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
 
-<head>
-  <title>Social Maps API Reference</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
+  <body>
+    <div id="app"></div>
 
-<body>
-  <div id="app"></div>
+    <script
+      crossorigin="anonymous"
+      integrity="sha256-u9aviz75KVVWjBTvNEeb2XGY3TcugSitQn35aVAcG7Q="
+      src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.36.1/dist/browser/standalone.js"
+    ></script>
 
-  <script crossorigin="anonymous" integrity="sha256-u9aviz75KVVWjBTvNEeb2XGY3TcugSitQn35aVAcG7Q="
-    src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.36.1/dist/browser/standalone.js"></script>
-
-  <script>
-    Scalar.createApiReference('#app', {
-      url: 'openapi.yaml',
-      withDefaultFonts: false,
-      defaultOpenAllTags: true,
-      expandAllModelSections: true,
-      expandAllResponses: true,
-      orderSchemaPropertiesBy: 'preserve'
-    })
-  </script>
-</body>
-
+    <script>
+      Scalar.createApiReference("#app", {
+        url: "openapi.yaml",
+        withDefaultFonts: false,
+        defaultOpenAllTags: true,
+        expandAllModelSections: true,
+        expandAllResponses: true,
+        orderSchemaPropertiesBy: "preserve",
+      });
+    </script>
+  </body>
 </html>

@@ -6,10 +6,8 @@ Social Maps has a dedicated API endpoint to [look up a place](/api/#tag/places/g
 
 Notice how our "name + location" approach is completely independent of OpenStreetMap IDs (e.g. [way/102437857](https://www.openstreetmap.org/way/102437857) for "Blackrock Castle"). This is intentional as OpenStreetMap IDs are not stable/permanent identifiers, as also explained on [Permanent IDs](https://wiki.openstreetmap.org/wiki/Permanent_ID). In addition, some OpenStreetMap clients such as [Organic Maps](https://organicmaps.app/)[^1] do not store OpenStreetMap IDs in their offline database so it would be impossible for them to look up places by OpenStreetMap IDs, whereas they can easily look up using "name + location".
 
-[^1]:
-    See the following discussions on their issue tracker:
+[^1]: See the following discussions on their issue tracker:
 
-    * \#1597 &mdash; [\[Editor\]: add "Show in OpenStreetMap" button](https://github.com/organicmaps/organicmaps/issues/1597)
-    * \#2421 &mdash; [Share OSM node/way/relation link instead of 'OSM Go' links](https://github.com/organicmaps/organicmaps/issues/2421)
-    * \#3344 &mdash; [Node links in Organic Maps do not link to nodes](https://github.com/organicmaps/organicmaps/issues/3344)
-
+    - \#1597 &mdash; [\[Editor\]: add "Show in OpenStreetMap" button](https://github.com/organicmaps/organicmaps/issues/1597)
+    - \#2421 &mdash; [Share OSM node/way/relation link instead of 'OSM Go' links](https://github.com/organicmaps/organicmaps/issues/2421)
+    - \#3344 &mdash; [Node links in Organic Maps do not link to nodes](https://github.com/organicmaps/organicmaps/issues/3344)
