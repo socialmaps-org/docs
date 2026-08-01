@@ -8,6 +8,8 @@ nav:
   - "lookups.md"
   - "API Reference": "/api/"
   - "SDK for Android": "/sdk/android/"
+  - "SDK for iOS/iPadOS": "/sdk/ios/documentation/socialmaps/"
+  - "Source Code": "https://gitlab.com/socialmaps"
 theme:
   name: material
   features:
