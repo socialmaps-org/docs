@@ -11,18 +11,26 @@
 
     <script
       crossorigin="anonymous"
-      integrity="sha256-u9aviz75KVVWjBTvNEeb2XGY3TcugSitQn35aVAcG7Q="
-      src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.36.1/dist/browser/standalone.js"
+      integrity="sha256-UT9G5oe85T0rwtaF9aKvRbn0QiRWAfrVHFzOQdUkYww="
+      src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.64.0/dist/browser/standalone.min.js"
     ></script>
 
     <script>
       Scalar.createApiReference("#app", {
-        url: "openapi.yaml",
+        url: "openapi.json",
         withDefaultFonts: false,
         defaultOpenAllTags: true,
         expandAllModelSections: true,
         expandAllResponses: true,
         orderSchemaPropertiesBy: "preserve",
+        telemetry: false,
+        hideClientButton: true,
+        agent: {
+          disabled: true,
+        },
+        mcp: {
+          disabled: true,
+        },
       });
     </script>
   </body>
