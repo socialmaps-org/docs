@@ -24,11 +24,11 @@ build:
 publish:
   stage: publish
   image: ghcr.io/astral-sh/uv:python3.14-trixie
-  pages:
-    publish: site
   before_script:
     - uv sync --locked
   script:
     - make build
+  pages:
+    publish: site
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
