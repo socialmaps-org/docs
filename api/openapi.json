@@ -217,6 +217,13 @@
             "required": ["id"],
             "type": "object"
           },
+          "reviewed_at": {
+            "description": "The [UNIX timestamp](https://en.wikipedia.org/wiki/Unix_time) of when the **Place** was originally reviewed at. This might be different for **Review**s that imported from other platforms. This is always less than or equal to 'created'.",
+            "examples": [1785628450],
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
           "user": {
             "additionalProperties": false,
             "description": "The **User** who created this **Review**. This is a stub object, meaning it contains only an ID.",
@@ -236,6 +243,7 @@
           "object",
           "id",
           "created",
+          "reviewed_at",
           "place",
           "user",
           "liked",
@@ -629,6 +637,13 @@
                             "required": ["id"],
                             "type": "object"
                           },
+                          "reviewed_at": {
+                            "description": "The [UNIX timestamp](https://en.wikipedia.org/wiki/Unix_time) of when the **Place** was originally reviewed at. This might be different for **Review**s that imported from other platforms. This is always less than or equal to 'created'.",
+                            "examples": [1785628450],
+                            "format": "int64",
+                            "minimum": 0,
+                            "type": "integer"
+                          },
                           "user": {
                             "$ref": "#/components/schemas/User",
                             "description": "The **User** who created this **Review**. This is an expanded object, meaning it contains all fields."
@@ -639,6 +654,7 @@
                           "object",
                           "id",
                           "created",
+                          "reviewed_at",
                           "place",
                           "liked",
                           "comment",
@@ -703,6 +719,11 @@
                     "description": "Whether the user liked this **Place** or not.",
                     "examples": [true],
                     "type": "boolean"
+                  },
+                  "reviewed_at": {
+                    "description": "The [UNIX timestamp](https://en.wikipedia.org/wiki/Unix_time) of when the **Place** was originally reviewed at, if different from now (such as while importing **Review**s from another platform). This cannot be in the future.",
+                    "format": "int64",
+                    "type": ["integer", "null"]
                   }
                 },
                 "required": ["liked", "comment"],
